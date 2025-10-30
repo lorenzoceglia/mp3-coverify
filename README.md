@@ -1,4 +1,4 @@
-# 🎵 mp3-coverify v1.0.1
+# 🎵 MP3-COVERIFY
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
