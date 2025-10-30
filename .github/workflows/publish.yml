@@ -47,7 +47,7 @@ jobs:
         run: |
           echo "🔧 Changing package name for GitHub Packages..."
           # Sovrascrive temporaneamente il name nel package.json
-          jq '.name = "@${{ github.repository_owner }}/mp3-cover-patcher"' package.json > package.tmp.json
+          jq '.name = "@${{ github.repository_owner }}/mp3-coverify"' package.json > package.tmp.json
           mv package.tmp.json package.json
 
       - name: Authenticate GitHub Packages
