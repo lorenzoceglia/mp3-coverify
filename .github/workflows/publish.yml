@@ -1,0 +1,66 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  publish:
+    name: Publish to npm & GitHub Packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Authenticate npm
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm
+        run: |
+          echo "📦 Publishing to npm..."
+          pnpm publish --registry https://registry.npmjs.org --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Prepare GitHub scoped package
+        run: |
+          echo "🔧 Changing package name for GitHub Packages..."
+          # Sovrascrive temporaneamente il name nel package.json
+          jq '.name = "@${{ github.repository_owner }}/mp3-cover-patcher"' package.json > package.tmp.json
+          mv package.tmp.json package.json
+
+      - name: Authenticate GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${GH_PAT}" > ~/.npmrc
+          echo "@${{ github.repository_owner }}:registry=https://npm.pkg.github.com/" >> ~/.npmrc
+          cat ~/.npmrc
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+
+      - name: Publish to GitHub Packages
+        run: |
+          echo "📦 Publishing to GitHub Packages..."
+          pnpm publish --registry https://npm.pkg.github.com --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PAT }}

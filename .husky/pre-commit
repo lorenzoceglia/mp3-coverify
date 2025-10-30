@@ -1,0 +1,9 @@
+#!/bin/sh
+
+echo "🔧 Running pre-commit checks..."
+pnpm lint || {
+  echo "❌ Lint failed. Commit aborted."
+  exit 1
+}
+
+echo "✅ Pre-commit passed."

@@ -1,0 +1,59 @@
+{
+	"name": "mp3-coverify",
+	"version": "1.0.0",
+	"description": "Automatically downloads and embeds MP3 covers from Spotify, iTunes, MusicBrainz, and Discogs",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/lorenzoceglia/mp3-coverify"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./cli": "./dist/cli.js"
+	},
+	"bin": {
+		"mp3-coverify": "./dist/cli.js"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"prepublishOnly": "pnpm build",
+		"lint": "biome check src --fix",
+		"prepare": "husky",
+		"postinstall": "husky"
+	},
+	"dependencies": {
+		"axios": "^1.9.0",
+		"commander": "^14.0.2",
+		"dotenv": "^16.5.0",
+		"fs-extra": "^11.3.0",
+		"node-id3": "^0.2.9"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.2",
+		"@types/fs-extra": "^11.0.4",
+		"@types/node": "^22.15.29",
+		"husky": "^9.1.7",
+		"typescript": "^5.8.3"
+	},
+	"license": "MIT",
+	"keywords": [
+		"mp3",
+		"cover",
+		"metadata",
+		"id3",
+		"music",
+		"spotify",
+		"itunes"
+	]
+}

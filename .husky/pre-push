@@ -1,0 +1,9 @@
+#!/bin/sh
+
+echo "🔧 Running pre-push checks..."
+pnpm build || {
+  echo "❌ Build failed. Push aborted."
+  exit 1
+}
+
+echo "✅ Pre-push passed."
