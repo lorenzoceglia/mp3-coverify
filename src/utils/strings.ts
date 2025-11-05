@@ -1,8 +1,36 @@
-export function sanitizeText(str: string) {
+import ID3 from "node-id3";
+
+export const getArtistAndTitle = (filePath: string, fileName: string) => {
+	const tags = ID3.read(filePath);
+	let artist = sanitizeText(tags.artist || "");
+	let title = sanitizeText(tags.title || "");
+
+	if (!artist || !title) {
+		const parsed = parseFileName(fileName);
+		artist ||= sanitizeText(parsed.artist);
+		title ||= sanitizeText(parsed.title);
+	}
+
+	if (!artist && title) {
+		const guess = title.match(/^(.*?)(?=\s+[^\s]+$)/);
+		if (guess) {
+			artist = guess[1].trim();
+			title = title.replace(artist, "").trim();
+		}
+	}
+
+	if (artist && title) {
+		title = removeArtistFromTitle(artist, title);
+	}
+
+	return { artist, title };
+};
+
+export const sanitizeText = (str: string) => {
 	return str
 		.replace(/[_-]/g, " ")
 		.replace(/^[0-9]+[.\-\s]*/g, "")
-		.replace(/\(.*?\)|\[.*?\]/g, "")
+		.replace(/\(.*?\)|\[.*?]/g, "")
 		.replace(
 			/\b(original mix|extended mix|clean|dirty|intro|edit|remix|version|track|live|SE|Wingman|VIP)\b/gi,
 			"",
@@ -16,16 +44,16 @@ export function sanitizeText(str: string) {
 		.replace(/Ã©/g, "é")
 		.replace(/Ã/g, "à")
 		.trim();
-}
+};
 
-export function parseFileName(filename: string) {
+export const parseFileName = (filename: string) => {
 	const name = filename.replace(/\.(mp3|MP3)$/, "").trim();
 
 	const clean = name
 		.replace(/\b\d{2,3} ?bpm\b/gi, "")
 		.replace(/\b\d{1,2}[AB]\b/g, "")
 		.replace(/\b(clean|dirty|extended|edit|intro|SE|wingman|VIP)\b/gi, "")
-		.replace(/\(.*?\)|\[.*?\]/g, "")
+		.replace(/\(.*?\)|\[.*?]/g, "")
 		.replace(/\s{2,}/g, " ")
 		.trim();
 
@@ -44,12 +72,12 @@ export function parseFileName(filename: string) {
 	}
 
 	return { artist: "", title: clean };
-}
+};
 
-export function generateSearchVariations(
+export const generateSearchVariations = (
 	artist: string,
 	title: string,
-): string[] {
+): string[] => {
 	const combinations = new Set([
 		`${artist} ${title}`,
 		`${title} ${artist}`,
@@ -60,9 +88,9 @@ export function generateSearchVariations(
 	]);
 
 	return Array.from(combinations).map(sanitizeText).filter(Boolean);
-}
+};
 
-export function removeArtistFromTitle(artist: string, title: string) {
+export const removeArtistFromTitle = (artist: string, title: string) => {
 	const escapedArtist = artist.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 	const regex = new RegExp(escapedArtist, "i");
 
@@ -71,4 +99,4 @@ export function removeArtistFromTitle(artist: string, title: string) {
 	}
 
 	return title;
-}
+};

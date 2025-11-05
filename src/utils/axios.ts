@@ -7,9 +7,28 @@ import type {
 	SpotifyResponse,
 } from "../types/index.js";
 import { makeDelay } from "./misc.js";
+import { generateSearchVariations } from "./strings.js";
 
-export async function fetchFromiTunes(terms: string[], delay: number) {
-	for (const term of terms) {
+export const safeFetch = async (
+	fn: (artist: string, title: string) => Promise<Buffer | null>,
+	artist: string,
+	title: string,
+) => {
+	try {
+		return await fn(artist, title);
+	} catch (_err) {
+		return null;
+	}
+};
+
+export const fetchFromiTunes = async (
+	artist: string,
+	title: string,
+	delay: number,
+) => {
+	const variations = generateSearchVariations(artist, title);
+
+	for (const term of variations) {
 		try {
 			const res = await axios.get<ITunesSearchResponse>(
 				"https://itunes.apple.com/search",
@@ -18,45 +37,68 @@ export async function fetchFromiTunes(terms: string[], delay: number) {
 					timeout: 5000,
 				},
 			);
+
 			const results = res.data.results || [];
-			if (results.length) {
-				const artwork = results[0].artworkUrl100;
-				return artwork.replace("100x100bb", "600x600bb");
-			}
+			if (!results.length) continue;
+
+			const artworkUrl = results[0].artworkUrl100?.replace(
+				"100x100bb",
+				"600x600bb",
+			);
+
+			if (!artworkUrl) continue;
+
+			const imgRes = await axios.get(artworkUrl, {
+				responseType: "arraybuffer",
+				timeout: 7000,
+			});
+
+			return Buffer.from(imgRes.data);
 		} catch (err) {
-			if ([403, 429].includes(err as number)) await makeDelay(delay);
+			if (axios.isAxiosError(err)) {
+				const status = err.response?.status;
+				if (status && [403, 429].includes(status)) {
+					await makeDelay(delay);
+				}
+			}
 		}
 	}
-	return null;
-}
 
-export async function fetchFromSpotify(
+	return null;
+};
+
+export const fetchFromSpotify = async (
 	artist: string,
 	title: string,
-	spotifyToken: string,
-) {
+	spotifyToken: string | null,
+): Promise<Buffer | null> => {
 	if (!spotifyToken) throw new Error("No Spotify token set.");
-	const query = encodeURIComponent(`track:${title} artist:${artist}`);
 
+	const query = encodeURIComponent(`track:${title} artist:${artist}`);
 	const res = await axios.get<SpotifyResponse>(
 		`https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`,
 		{
 			headers: {
 				Authorization: `Bearer ${spotifyToken}`,
 			},
+			timeout: 7000,
 		},
 	);
 
-	const data = res.data;
-	const img = data.tracks?.items?.[0]?.album?.images?.[0]?.url;
+	const imgUrl = res.data.tracks?.items?.[0]?.album?.images?.[0]?.url;
+	if (!imgUrl) return null;
 
-	if (!img) return null;
+	const imgRes = await axios.get(imgUrl, {
+		responseType: "arraybuffer",
+		timeout: 7000,
+	});
+	return Buffer.from(imgRes.data);
+};
 
-	const imageRes = await axios.get(img, { responseType: "arraybuffer" });
-	return imageRes.data;
-}
-
-export async function fetchFromMusicBrainz(artist: string, title: string) {
+export const fetchFromMusicBrainz = async (
+	artist: string,
+	title: string,
+): Promise<Buffer | null> => {
 	try {
 		const query = encodeURIComponent(`${artist} ${title}`);
 		const res = await axios.get<MusicBrainzResponse>(
@@ -68,25 +110,25 @@ export async function fetchFromMusicBrainz(artist: string, title: string) {
 			},
 		);
 
-		const recording = res.data.recordings?.[0];
-		const releaseId = recording?.releases?.[0]?.id;
+		const releaseId = res.data.recordings?.[0]?.releases?.[0]?.id;
 		if (!releaseId) return null;
 
 		const art = await axios.get(
 			`https://coverartarchive.org/release/${releaseId}/front`,
 			{
 				responseType: "arraybuffer",
+				timeout: 7000,
 				validateStatus: (s) => s < 500,
 			},
 		);
 
-		return art.status === 200 ? art.data : null;
+		return art.status === 200 ? Buffer.from(art.data) : null;
 	} catch {
 		return null;
 	}
-}
+};
 
-export async function getSpotifyToken() {
+export const getSpotifyToken = async () => {
 	try {
 		const res = await axios.post<SpotifyTokenResponse>(
 			"https://accounts.spotify.com/api/token",
@@ -104,9 +146,9 @@ export async function getSpotifyToken() {
 	} catch (_e) {
 		return null;
 	}
-}
+};
 
-export async function fetchFromDiscogs(artist: string, title: string) {
+export const fetchFromDiscogs = async (artist: string, title: string) => {
 	if (!process.env.DISCOGS_TOKEN) return null;
 
 	try {
@@ -123,9 +165,13 @@ export async function fetchFromDiscogs(artist: string, title: string) {
 		const img = res.data.results?.find((r) => r.cover_image)?.cover_image;
 		if (!img) return null;
 
-		const imageRes = await axios.get(img, { responseType: "arraybuffer" });
-		return imageRes.data;
+		const imageRes = await axios.get(img, {
+			responseType: "arraybuffer",
+			timeout: 7000,
+		});
+
+		return Buffer.from(imageRes.data);
 	} catch {
 		return null;
 	}
-}
+};
