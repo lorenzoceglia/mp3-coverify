@@ -1,9 +1,10 @@
 import dotenv from "dotenv";
+import { processFile } from "./core/processFile.js";
 import { processFolder } from "./core/processFolder.js";
 
 dotenv.config();
 
-export { processFolder };
+export { processFolder, processFile };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
 	const folderPath = process.argv[2];

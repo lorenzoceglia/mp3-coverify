@@ -37,11 +37,8 @@ export const processFolder = async (
 	for (const fileName of mp3s) {
 		try {
 			const filePath = path.join(folderPath, fileName);
-
 			const { artist, title } = getArtistAndTitle(filePath, fileName);
-
 			const variations = generateSearchVariations(artist, title);
-
 			let coverData: Buffer | null = null;
 
 			for (const fetcher of sources) {

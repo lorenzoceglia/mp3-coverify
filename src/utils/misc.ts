@@ -12,7 +12,7 @@ export const isError = (e: unknown): e is Error => {
 export const makeDelay = (ms: number) =>
 	new Promise((resolve) => setTimeout(resolve, ms));
 
-export const buildSources = (spotifyToken: string | null, delay: number) => [
+export const buildSources = (spotifyToken: string | null, delay?: number) => [
 	...(process.env.SPOTIFY_CLIENT_ID &&
 	process.env.SPOTIFY_CLIENT_SECRET &&
 	spotifyToken
@@ -21,7 +21,8 @@ export const buildSources = (spotifyToken: string | null, delay: number) => [
 					fetchFromSpotify(artist, title, spotifyToken),
 			]
 		: []),
-	(artist: string, title: string) => fetchFromiTunes(artist, title, delay),
+	(artist: string, title: string) =>
+		fetchFromiTunes(artist, title, delay ?? 1500),
 	(artist: string, title: string) => fetchFromMusicBrainz(artist, title),
 	...(process.env.DISCOGS_TOKEN
 		? [(artist: string, title: string) => fetchFromDiscogs(artist, title)]
