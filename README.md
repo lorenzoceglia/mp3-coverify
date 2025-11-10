@@ -92,6 +92,8 @@ mp3-coverify ./my-music --no-covers --custom-delay 2000
 
 ## 📦 Library Usage
 
+### Process Folder
+
 ```ts
 import { processFolder } from "mp3-coverify";
 
@@ -101,12 +103,27 @@ await processFolder("/path/to/mp3/folder", {
 });
 ```
 
-### Options
+#### Options
 
 | Option | Type | Default | Description |
 |---------|------|----------|-------------|
 | `generateCovers` | boolean | `true` | Whether to save JPG cover files in `export-covers` folder. |
 | `apiDelay` | number | `1500` | Delay between API requests (ms). |
+
+### Process Single File
+
+```ts
+import { processFile } from "mp3-coverify";
+
+await processFile("/path/to/song.mp3");
+```
+
+Processes a single MP3 file and updates its ID3 tag with the album cover. Unlike `processFolder`, this function:
+
+- Does **not** generate cover image files (only updates ID3 tags)
+- Does **not** use custom API delay (processes immediately)
+- Writes `not_found.log` in the same directory as the file if the cover is not found
+- Skips non-MP3 files automatically
 
 ---
 
