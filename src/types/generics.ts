@@ -12,3 +12,16 @@ export type ProcessFolderOptions = {
 	generateCovers?: boolean;
 	customDelay?: number;
 };
+
+export type processCoverOptions = {
+	provider: ProvidersEnum;
+	artist: string;
+	title: string;
+};
+
+export enum ProvidersEnum {
+	SPOTIFY = "spotify",
+	ITUNES = "itunes",
+	MUSICBRAINZ = "musicbrainz",
+	DISCOGS = "discogs",
+}

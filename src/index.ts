@@ -1,10 +1,11 @@
 import dotenv from "dotenv";
+import { processCover } from "./core/processCover.js";
 import { processFile } from "./core/processFile.js";
 import { processFolder } from "./core/processFolder.js";
 
 dotenv.config();
 
-export { processFolder, processFile };
+export { processFolder, processFile, processCover };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
 	const folderPath = process.argv[2];
@@ -13,5 +14,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 		process.exit(1);
 	}
 	console.log(`🚀 Starting cover download for folder: ${folderPath}`);
-	processFolder(folderPath);
+	processFile(folderPath);
 }

@@ -22,7 +22,7 @@ export const buildSources = (spotifyToken: string | null, delay?: number) => [
 			]
 		: []),
 	(artist: string, title: string) =>
-		fetchFromiTunes(artist, title, delay ?? 1500),
+		fetchFromiTunes(artist, title, false, delay ?? 1500),
 	(artist: string, title: string) => fetchFromMusicBrainz(artist, title),
 	...(process.env.DISCOGS_TOKEN
 		? [(artist: string, title: string) => fetchFromDiscogs(artist, title)]

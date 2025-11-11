@@ -39,7 +39,7 @@ export const processFolder = async (
 			const filePath = path.join(folderPath, fileName);
 			const { artist, title } = getArtistAndTitle(filePath, fileName);
 			const variations = generateSearchVariations(artist, title);
-			let coverData: Buffer | null = null;
+			let coverData: Buffer | null | string = null;
 
 			for (const fetcher of sources) {
 				coverData = await safeFetch(fetcher, artist, title);
@@ -57,17 +57,18 @@ export const processFolder = async (
 				}
 
 				try {
-					ID3.update(
-						{
-							image: {
-								mime: "image/jpeg",
-								type: { id: 3, name: "front cover" },
-								description: `Cover for ${artist} - ${title}`,
-								imageBuffer: coverData,
+					typeof coverData !== "string" &&
+						ID3.update(
+							{
+								image: {
+									mime: "image/jpeg",
+									type: { id: 3, name: "front cover" },
+									description: `Cover for ${artist} - ${title}`,
+									imageBuffer: coverData,
+								},
 							},
-						},
-						filePath,
-					);
+							filePath,
+						);
 				} catch (err) {
 					failedLog.push({
 						fileName,
