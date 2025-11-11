@@ -98,8 +98,8 @@ mp3-coverify ./my-music --no-covers --custom-delay 2000
 import { processFolder } from "mp3-coverify";
 
 await processFolder("/path/to/mp3/folder", {
-  generateCovers: true,
-  apiDelay: 2000
+    generateCovers: true,
+    apiDelay: 2000
 });
 ```
 
@@ -124,6 +124,44 @@ Processes a single MP3 file and updates its ID3 tag with the album cover. Unlike
 - Does **not** use custom API delay (processes immediately)
 - Writes `not_found.log` in the same directory as the file if the cover is not found
 - Skips non-MP3 files automatically
+
+### Process Cover (Single Provider)
+
+```ts
+import { processCover } from "mp3-coverify";
+import { ProvidersEnum } from "mp3-coverify/types/generics";
+
+const coverBuffer = await processCover({
+  provider: ProvidersEnum.SPOTIFY,
+  artist: "Daft Punk",
+  title: "Harder Better Faster Stronger"
+});
+```
+
+Fetches the album cover from a **specific provider** only. Returns a `Buffer` with the image data, a string in case of error, or `null` if not found.
+
+- Accepts parameters:
+    - `provider`: provider to query (required enum)
+    - `artist`: artist name
+    - `title`: track title
+- Useful when you want manual control over which provider to use
+- Does **not** update MP3 files or ID3 tags (only returns the cover data)
+- `SPOTIFY` requests require a valid token (handled automatically)
+
+#### Parameters `processCoverOptions`
+
+| Field      | Type                  | Required | Description                          |
+|------------|-----------------------|----------|--------------------------------------|
+| `provider` | `ProvidersEnum`       | Yes      | Provider to fetch cover from         |
+| `artist`   | `string`              | Yes      | Artist name                          |
+| `title`    | `string`              | Yes      | Track title                          |
+
+#### Available Providers
+
+- `SPOTIFY`
+- `ITUNES`
+- `MUSICBRAINZ`
+- `DISCOGS`
 
 ---
 
