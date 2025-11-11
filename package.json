@@ -1,6 +1,6 @@
 {
 	"name": "mp3-coverify",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Automatically downloads and embeds MP3 covers from Spotify, iTunes, MusicBrainz, and Discogs",
 	"type": "module",
 	"main": "./dist/index.js",
